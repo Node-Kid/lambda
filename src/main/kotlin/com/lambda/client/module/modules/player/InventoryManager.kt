@@ -1,7 +1,9 @@
 package com.lambda.client.module.modules.player
 
+import com.lambda.client.LambdaMod
 import com.lambda.client.commons.extension.ceilToInt
 import com.lambda.client.event.SafeClientEvent
+import com.lambda.client.event.events.GuiEvent
 import com.lambda.client.event.events.PlayerTravelEvent
 import com.lambda.client.mixin.extension.syncCurrentPlayItem
 import com.lambda.client.module.Category
@@ -15,6 +17,7 @@ import com.lambda.client.util.items.*
 import com.lambda.client.util.text.MessageSendHelper
 import com.lambda.client.util.threads.safeListener
 import net.minecraft.client.gui.inventory.GuiContainer
+import net.minecraft.client.gui.inventory.GuiInventory
 import net.minecraft.enchantment.EnchantmentHelper
 import net.minecraft.init.Enchantments
 import net.minecraft.inventory.Slot
@@ -43,10 +46,12 @@ object InventoryManager : Module(
     private val itemSaver by setting("Item Saver", false)
     private val duraThreshold by setting("Durability Threshold", 5, 1..50, 1, { itemSaver })
     private val autoEject by setting("Auto Eject", false)
+    private val ejectOnlyInInventory by setting("Eject Only In Inventory", false, description = "Only auto eject when inside the survival inventory")
     private val fullOnly by setting("Only At Full", false, { autoEject })
     private val pauseMovement by setting("Pause Movement", true)
     private val delay by setting("Delay Ticks", 1, 0..20, 1, unit = " ticks")
     private val helpMend by setting("Help Mend", false, description = "Helps mending items by replacing the offhand item with low HP items of the same type")
+
     val ejectList = setting(CollectionSetting("Eject List", defaultEjectList))
 
     enum class State {
@@ -72,14 +77,15 @@ object InventoryManager : Module(
             player.setVelocity(0.0, player.motionY, 0.0)
             it.cancel()
         }
-
         safeListener<TickEvent.ClientTickEvent> {
-            if (it.phase != TickEvent.Phase.START || player.isSpectator || mc.currentScreen is GuiContainer) return@safeListener
+            if (it.phase != TickEvent.Phase.START || player.isSpectator) return@safeListener
 
             if (!timer.tick(delay) && !(NoGhostItems.syncMode != NoGhostItems.SyncMode.PLAYER && NoGhostItems.isEnabled)) return@safeListener
-
+            if(mc.currentScreen is GuiInventory && ejectOnlyInInventory) {
+                if(ejectCheck()) eject()
+            }
+            if(mc.currentScreen is GuiContainer) return@safeListener
             setState()
-
             when (currentState) {
                 State.SAVING_ITEM -> saveItem()
                 State.HELPING_MEND -> helpMend()
@@ -141,6 +147,7 @@ object InventoryManager : Module(
     private fun SafeClientEvent.ejectCheck(): Boolean {
         return autoEject && ejectList.isNotEmpty()
             && (!fullOnly || player.inventorySlots.firstEmpty() == null)
+            && ((ejectOnlyInInventory && mc.currentScreen is GuiInventory ) || !ejectOnlyInInventory)
             && getEjectSlot() != null
     }
     /* End of state checks */
