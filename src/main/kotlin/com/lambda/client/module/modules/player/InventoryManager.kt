@@ -1,9 +1,7 @@
 package com.lambda.client.module.modules.player
 
-import com.lambda.client.LambdaMod
 import com.lambda.client.commons.extension.ceilToInt
 import com.lambda.client.event.SafeClientEvent
-import com.lambda.client.event.events.GuiEvent
 import com.lambda.client.event.events.PlayerTravelEvent
 import com.lambda.client.mixin.extension.syncCurrentPlayItem
 import com.lambda.client.module.Category
@@ -81,10 +79,13 @@ object InventoryManager : Module(
             if (it.phase != TickEvent.Phase.START || player.isSpectator) return@safeListener
 
             if (!timer.tick(delay) && !(NoGhostItems.syncMode != NoGhostItems.SyncMode.PLAYER && NoGhostItems.isEnabled)) return@safeListener
+
             if(mc.currentScreen is GuiInventory && ejectOnlyInInventory) {
                 if(ejectCheck()) eject()
             }
+
             if(mc.currentScreen is GuiContainer) return@safeListener
+
             setState()
             when (currentState) {
                 State.SAVING_ITEM -> saveItem()
