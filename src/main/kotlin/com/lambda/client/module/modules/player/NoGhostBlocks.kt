@@ -37,6 +37,7 @@ object NoGhostBlocks : Module(
     private var blockRenderUpdateJob: Job? = null
     init {
         safeListener<BlockPlaceEvent> {
+            if(mc.isSingleplayer) return@safeListener
             blockPositions[it.position] = it.blockState
         }
         safeListener<PacketEvent.Receive> {
