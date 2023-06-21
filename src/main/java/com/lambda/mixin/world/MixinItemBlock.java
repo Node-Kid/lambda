@@ -1,5 +1,7 @@
 package com.lambda.mixin.world;
 
+import com.lambda.client.event.LambdaEventBus;
+import com.lambda.client.event.events.BlockPlaceEvent;
 import com.lambda.client.module.modules.player.NoGhostBlocks;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
@@ -17,6 +19,8 @@ public class MixinItemBlock {
 
     @Redirect(method = "placeBlockAt", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/World;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/state/IBlockState;I)Z"))
     private boolean ignoreSetBlockState(World instance, BlockPos p_setBlockState_1_, IBlockState p_setBlockState_2_, int p_setBlockState_3_) {
+        BlockPlaceEvent event = new BlockPlaceEvent(p_setBlockState_1_, p_setBlockState_2_);
+        LambdaEventBus.INSTANCE.post(event);
         if (NoGhostBlocks.INSTANCE.isEnabled() && !mc.isSingleplayer()) {
             return true;
         } else {

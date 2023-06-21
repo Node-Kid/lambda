@@ -364,7 +364,7 @@ object Search : Module(
             && !signTextComponents.all { it.text.isEmpty() }
     }
 
-    private fun SafeClientEvent.getBlockColor(pos: BlockPos, blockState: IBlockState): ColorHolder {
+    fun SafeClientEvent.getBlockColor(pos: BlockPos, blockState: IBlockState): ColorHolder {
         val block = blockState.block
         return if (autoBlockColor) {
             when (block) {
