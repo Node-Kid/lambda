@@ -1,8 +1,6 @@
 package com.lambda.client.event
 
-import com.lambda.client.LambdaMod
 import com.lambda.client.event.eventbus.AbstractAsyncEventBus
-import com.lambda.client.event.events.PacketEvent
 import com.lambda.client.event.listener.AsyncListener
 import com.lambda.client.event.listener.Listener
 import com.lambda.client.util.Wrapper
@@ -10,7 +8,6 @@ import io.netty.util.internal.ConcurrentSet
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import net.minecraft.network.play.server.SPacketBlockChange
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentSkipListSet
 
